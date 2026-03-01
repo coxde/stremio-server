@@ -1,5 +1,5 @@
 # Build stage
-FROM node:lts-slim AS builder
+FROM node:lts-slim@sha256:e8e2e91b1378f83c5b2dd15f0247f34110e2fe895f6ca7719dbb780f929368eb AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -14,7 +14,7 @@ RUN VERSION=$(curl -s "https://registry.hub.docker.com/v2/repositories/stremio/s
     curl -fL "https://dl.strem.io/server/${VERSION}/desktop/server.js" -o server.js
 
 # Final stage
-FROM node:lts-slim
+FROM node:lts-slim@sha256:e8e2e91b1378f83c5b2dd15f0247f34110e2fe895f6ca7719dbb780f929368eb
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
