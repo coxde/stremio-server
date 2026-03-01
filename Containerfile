@@ -1,8 +1,11 @@
 # Build stage
-FROM node:lts-alpine@sha256:7fddd9ddeae8196abf4a3ef2de34e11f7b1a722119f91f28ddf1e99dcafdf114 AS builder
+FROM node:lts-slim AS builder
 
 # Install build dependencies
-RUN apk add --no-cache curl jq
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    jq
 
 # Fetch server.js version from latest tagged version on Docker Hub
 WORKDIR /tmp
@@ -11,10 +14,11 @@ RUN VERSION=$(curl -s "https://registry.hub.docker.com/v2/repositories/stremio/s
     curl -fL "https://dl.strem.io/server/${VERSION}/desktop/server.js" -o server.js
 
 # Final stage
-FROM node:lts-alpine@sha256:7fddd9ddeae8196abf4a3ef2de34e11f7b1a722119f91f28ddf1e99dcafdf114
+FROM node:lts-slim
 
 # Install runtime dependencies
-RUN apk add --no-cache jellyfin-ffmpeg
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    jellyfin-ffmpeg7
 
 # Copy server.js from builder stage
 COPY --from=builder /tmp/server.js ./
