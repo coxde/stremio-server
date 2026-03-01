@@ -1,5 +1,5 @@
 # Build stage
-FROM node:current-alpine@sha256:18e02657e2a2cc3a87210ee421e9769ff28a1ac824865d64f74d6d2d59f74b6b AS builder
+FROM node:lts-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache curl jq jellyfin-ffmpeg
@@ -11,7 +11,7 @@ RUN VERSION=$(curl -s "https://registry.hub.docker.com/v2/repositories/stremio/s
     curl -fL "https://dl.strem.io/server/${VERSION}/desktop/server.js" -o server.js
 
 # Final stage
-FROM node:current-alpine@sha256:18e02657e2a2cc3a87210ee421e9769ff28a1ac824865d64f74d6d2d59f74b6b
+FROM node:lts-alpine
 
 # Install runtime dependencies
 RUN apk add --no-cache jellyfin-ffmpeg
