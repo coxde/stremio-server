@@ -1,8 +1,17 @@
+# Jellyfin FFMPEG package
+ARG OS_VERSION=trixie
+ARG PACKAGE_ARCH=amd64
+ARG FFMPEG_PACKAGE=jellyfin-ffmpeg7
+
 # Build stage
-FROM node:lts-alpine@sha256:7fddd9ddeae8196abf4a3ef2de34e11f7b1a722119f91f28ddf1e99dcafdf114 AS builder
+FROM node:lts-trixie AS builder
 
 # Install build dependencies
-RUN apk add --no-cache curl jq
+RUN apt-get update && apt-get install --no-install-recommends --no-install-suggests --yes \
+    ca-certificates \
+    curl \
+    jq \
+&& rm -rf /var/cache/apt/archives* /var/lib/apt/lists/*
 
 # Fetch server.js version from latest tagged version on Docker Hub
 WORKDIR /tmp
@@ -11,10 +20,34 @@ RUN VERSION=$(curl -s "https://registry.hub.docker.com/v2/repositories/stremio/s
     curl -fL "https://dl.strem.io/server/${VERSION}/desktop/server.js" -o server.js
 
 # Final stage
-FROM node:lts-alpine@sha256:7fddd9ddeae8196abf4a3ef2de34e11f7b1a722119f91f28ddf1e99dcafdf114
+FROM node:lts-trixie
+
+ARG OS_VERSION
+ARG PACKAGE_ARCH
+ARG FFMPEG_PACKAGE
 
 # Install runtime dependencies
-RUN apk add --no-cache jellyfin-ffmpeg
+RUN apt-get update && apt-get install --no-install-recommends --no-install-suggests --yes \
+    ca-certificates \
+    curl \
+    gnupg \
+ && curl -fsSL https://repo.jellyfin.org/jellyfin_team.gpg.key \
+  | gpg --dearmor -o /etc/apt/keyrings/jellyfin.gpg \
+ && cat <<EOF > /etc/apt/sources.list.d/jellyfin.sources
+Types: deb
+URIs: https://repo.jellyfin.org/debian
+Suites: ${OS_VERSION}
+Components: main
+Architectures: ${PACKAGE_ARCH}
+Signed-By: /etc/apt/keyrings/jellyfin.gpg
+EOF
+
+RUN apt-get update && apt-get install --no-install-recommends --no-install-suggests --yes \
+    ${FFMPEG_PACKAGE} \
+ && apt-get remove gnupg apt-transport-https --yes \
+ && apt-get clean autoclean --yes \
+ && apt-get autoremove --yes \
+ && rm -rf /var/cache/apt/archives* /var/lib/apt/lists/*
 
 # Copy server.js from builder stage
 COPY --from=builder /tmp/server.js ./
