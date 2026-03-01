@@ -4,7 +4,7 @@ ARG PACKAGE_ARCH=amd64
 ARG FFMPEG_PACKAGE=jellyfin-ffmpeg7
 
 # Build stage
-FROM node:lts-trixie AS builder
+FROM node:lts-trixie@sha256:81649592d9833d9220423561fc517b34e932b751873274024c2a969ff4a9bfc2 AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install --no-install-recommends --no-install-suggests --yes \
@@ -20,7 +20,7 @@ RUN VERSION=$(curl -s "https://registry.hub.docker.com/v2/repositories/stremio/s
     curl -fL "https://dl.strem.io/server/${VERSION}/desktop/server.js" -o server.js
 
 # Final stage
-FROM node:lts-trixie
+FROM node:lts-trixie@sha256:81649592d9833d9220423561fc517b34e932b751873274024c2a969ff4a9bfc2
 
 ARG OS_VERSION
 ARG PACKAGE_ARCH
